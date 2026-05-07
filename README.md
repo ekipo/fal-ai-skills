@@ -1,16 +1,32 @@
 # fal.ai Skills
 
-Agent skills for [fal.ai](https://fal.ai). All execution runs through the [genmedia CLI](https://github.com/fal-ai-community/genmedia-cli). These skills are knowledge layers (which endpoint to use, how to prompt it, how to chain calls). They are not API wrappers and ship no `.sh` scripts.
+Agent skills for [fal.ai](https://fal.ai). The default execution path is the
+[genmedia CLI](https://github.com/fal-ai-community/genmedia-cli): discover an
+endpoint, inspect its schema, run it, poll status when needed, and download
+outputs. Most skills in this repo are knowledge layers that tell an agent which
+endpoint to use, how to prompt it, and how to chain calls.
 
 Compatible with [Claude.ai Projects](https://claude.ai), [Claude Code](https://claude.ai/claude-code), and other agent platforms supporting the community skills format.
 
+## Current system
+
+- Skills live directly under `skills/<name>/`.
+- Each skill has a required `SKILL.md` with `name` and `description`
+  frontmatter.
+- Larger skills may add `references/` files for prompt patterns, endpoint
+  notes, examples, or workflows.
+- `skills/index.json` is the generated registry for the current skill folders.
+- User-facing model execution should go through `genmedia` unless a skill
+  explicitly documents another workflow in its own folder.
+
 ## Skills
 
-### Foundational
+### Core
 
 | Skill | Purpose |
 |-------|---------|
 | **[genmedia](skills/genmedia)** | The CLI surface. `models`, `schema`, `run`, `status`, `upload`, `pricing`, `docs`. Every other skill calls genmedia for execution. |
+| **[model-routing](skills/model-routing)** | Endpoint-first model defaults for production skills. |
 
 ### Umbrellas, knowledge organized by modality, family, or use case
 
@@ -19,42 +35,27 @@ Compatible with [Claude.ai Projects](https://claude.ai), [Claude Code](https://c
 | **[fal-models-catalog](skills/fal-models-catalog)** | Curated endpoint picks across 10 modalities (text-to-image, image-to-image, text-to-video, image-to-video, video-to-video, text-to-3d, image-to-3d, text-to-audio, audio-to-text, image-to-text). |
 | **[fal-prompting](skills/fal-prompting)** | Family-specific prompt craft (Kling, GPT Image 2, Happy Horse). |
 | **[fal-recipes](skills/fal-recipes)** | Use-case pipelines (cinematography, character design, commercial, storytelling, lipsync, restoration, virtual try-on, video with audio, product shot). |
-| **[model-routing](skills/model-routing)** | Endpoint-first model defaults for production skills. |
 
 ### Production skills
 
 | Skill | Purpose |
 |-------|---------|
-| **[commercial](skills/commercial)** | Product photography, ads, e-commerce batches, product reveal videos, and brand-safe product prompts. |
-| **[marketing](skills/marketing)** | Campaign matrices, launch kits, paid social variants, landing-page visuals, banners, and channel-specific marketing assets. |
-| **[ugc](skills/ugc)** | Creator ads, talking-head clips, testimonials, demos, unboxing, reaction, faceless voiceover, and short vertical social videos. |
 | **[character-design](skills/character-design)** | Original characters, identity anchors, reference consistency, and character-driven media. |
 | **[cinematography](skills/cinematography)** | Cinematic stills and video direction: shot language, lighting, lens, color, and camera movement. |
+| **[commercial](skills/commercial)** | Product photography, ads, e-commerce batches, product reveal videos, and brand-safe product prompts. |
+| **[marketing](skills/marketing)** | Campaign matrices, launch kits, paid social variants, landing-page visuals, banners, and channel-specific marketing assets. |
 | **[storytelling](skills/storytelling)** | Multi-shot narratives, storyboards, brand films, social stories, and sequence continuity. |
+| **[ugc](skills/ugc)** | Creator ads, talking-head clips, testimonials, demos, unboxing, reaction, faceless voiceover, and short vertical social videos. |
 
-### Verticals, closed pipelines
+### Workflow and vertical skills
 
-| Skill | Description | Scripts |
-|-------|-------------|---------|
-| **[fal-3d](skills/claude.ai/fal-3d)** | Text/image to 3D model generation | `generate-3d.sh` |
-| **[fal-vision](skills/claude.ai/fal-vision)** | Image analysis — segment, detect, OCR, describe | `analyze.sh` |
-| **[fal-restore](skills/claude.ai/fal-restore)** | Restore image quality — deblur, denoise, fix faces | `restore.sh` |
-| **[fal-tryon](skills/claude.ai/fal-tryon)** | Virtual clothing try-on | `tryon.sh` |
-| **[fal-train](skills/claude.ai/fal-train)** | Train custom LoRA models | `train.sh` |
-| **[fal-gamedev](skills/claude.ai/fal-gamedev)** | 2D pixel art game assets — characters, sprite sheets, background removal, parallax + isometric backgrounds | — |
-
-### Platform & Utilities
-
-| Skill | Description | Scripts |
-|-------|-------------|---------|
-| **[fal-platform](skills/claude.ai/fal-platform)** | Pricing, usage tracking, cost estimation, API key setup | `pricing.sh`, `usage.sh`, `estimate-cost.sh`, `setup.sh`, `requests.sh` |
-| **[fal-workflow](skills/claude.ai/fal-workflow)** | Create multi-step model pipelines | `create-workflow.sh` |
 | Skill | Purpose |
 |-------|---------|
-| **[fal-workflow](skills/fal-workflow)** | Multi-step pipelines. Mode A authors workflow JSON for the fal.ai cloud runtime; Mode B drives genmedia CLI orchestration. |
-| **[fal-redesign](skills/fal-redesign)** | Website redesign with its own Node runtime (puppeteer screenshot, multi-vision pipeline, file orchestration). Powers screenshot → vision-driven build-spec → HTML implementation. |
-| **[fal-regenerate-3d](skills/fal-regenerate-3d)** | Interactive 3D character-selector experience (Three.js + Meshy + Seedance). Powers [fal-roster.vercel.app](https://fal-roster.vercel.app). |
+| **[fal-workflow](skills/fal-workflow)** | Multi-step pipelines. Mode A authors fal.ai workflow JSON; Mode B drives genmedia CLI orchestration. |
 | **[fal-gamedev](skills/fal-gamedev)** | 2D pixel-art game assets: characters, sprite sheets, parallax and isometric backgrounds. |
+| **[fal-redesign](skills/fal-redesign)** | Website redesign: screenshot review, vision-driven reference image, build spec, and implementation guidance. |
+| **[fal-regenerate-3d](skills/fal-regenerate-3d)** | Interactive 3D character-selector experience with Three.js, Meshy, and Seedance. |
+| **[genmedia-workflow](skills/genmedia-workflow)** | Genmedia-oriented workflow planning, node rules, pipeline patterns, and reusable recipes. |
 
 ## Setup
 
@@ -64,10 +65,7 @@ Compatible with [Claude.ai Projects](https://claude.ai), [Claude Code](https://c
 
 ### 2. Install genmedia
 
-```bash
-curl https://genmedia.sh/install -fsS | bash # macOS / Linux
-genmedia setup
-```
+Install genmedia from [fal-ai-community/genmedia-cli](https://github.com/fal-ai-community/genmedia-cli), then run `genmedia setup`.
 
 ### 3. Install skills
 
@@ -75,7 +73,7 @@ genmedia setup
 
 **Any project with `genmedia` installed:**
 
-```bash
+```text
 genmedia init
 ```
 
@@ -83,7 +81,7 @@ Installs the default skill bundle into `.agents/skills/` or `.claude/skills/`.
 
 ## Skill format
 
-```
+```text
 skills/
 └── skill-name/
  ├── SKILL.md # YAML frontmatter (name, description) + body
