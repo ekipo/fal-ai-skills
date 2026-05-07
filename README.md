@@ -34,6 +34,21 @@ Compatible with [Claude.ai Projects](https://claude.ai), [Claude Code](https://c
 
 ### Verticals, closed pipelines
 
+| Skill | Description | Scripts |
+|-------|-------------|---------|
+| **[fal-3d](skills/claude.ai/fal-3d)** | Text/image to 3D model generation | `generate-3d.sh` |
+| **[fal-vision](skills/claude.ai/fal-vision)** | Image analysis — segment, detect, OCR, describe | `analyze.sh` |
+| **[fal-restore](skills/claude.ai/fal-restore)** | Restore image quality — deblur, denoise, fix faces | `restore.sh` |
+| **[fal-tryon](skills/claude.ai/fal-tryon)** | Virtual clothing try-on | `tryon.sh` |
+| **[fal-train](skills/claude.ai/fal-train)** | Train custom LoRA models | `train.sh` |
+| **[fal-gamedev](skills/claude.ai/fal-gamedev)** | 2D pixel art game assets — characters, sprite sheets, background removal, parallax + isometric backgrounds | — |
+
+### Platform & Utilities
+
+| Skill | Description | Scripts |
+|-------|-------------|---------|
+| **[fal-platform](skills/claude.ai/fal-platform)** | Pricing, usage tracking, cost estimation, API key setup | `pricing.sh`, `usage.sh`, `estimate-cost.sh`, `setup.sh`, `requests.sh` |
+| **[fal-workflow](skills/claude.ai/fal-workflow)** | Create multi-step model pipelines | `create-workflow.sh` |
 | Skill | Purpose |
 |-------|---------|
 | **[fal-workflow](skills/fal-workflow)** | Multi-step pipelines. Mode A authors workflow JSON for the fal.ai cloud runtime; Mode B drives genmedia CLI orchestration. |
