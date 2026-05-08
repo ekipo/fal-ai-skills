@@ -19,10 +19,11 @@ For the full command surface (every flag, every option, every example), see [ref
 ## Critical rules
 
 1. **Always use `--json` when an agent will read the output.** Pretty mode is for humans only.
-2. **Never invent endpoint IDs.** Use `genmedia models "<query>"` to discover, `genmedia models --endpoint_id <id>` to verify.
-3. **Inspect schema before running.** `genmedia schema <endpoint_id> --json` shows the exact field names. Guessed flags fail with 422.
-4. **Save files with `--download`, not curl.** The CLI handles authentication, naming, and file format detection.
-5. **Use `--async` for long-running generation.** Image work usually completes inline; video/audio/3D usually need queue + status polling.
+2. **Prefer smart routing for default-quality requests.** `genmedia run "<prompt>"` (no endpoint, no `--prompt` needed) classifies the prompt and routes to a sensible default per modality. Only do explicit endpoint discovery when the user names a model, asks for a non-default behavior (specific style, quality tier, parameter), or the smart-route default is wrong for the task.
+3. **Never invent endpoint IDs.** When you do need a specific endpoint, use `genmedia models "<query>"` to discover (auto-filters by inferred modality) and `genmedia models --endpoint_id <id>` to verify.
+4. **Inspect schema before running with custom params.** `genmedia schema <endpoint_id> --json` shows the exact field names. Smart routing only needs `prompt`; explicit endpoints with custom params need a schema check first or guessed flags fail with 422.
+5. **Save files with `--download`, not curl.** The CLI handles authentication, naming, and file format detection.
+6. **Use `--async` for long-running generation.** Image work usually completes inline; video/audio/3D usually need queue + status polling.
 
 ## Command index
 
@@ -42,7 +43,34 @@ For the full command surface (every flag, every option, every example), see [ref
 
 ## Quick patterns
 
-### Run a model and download the result
+### Smart routing (preferred for default-quality requests)
+
+The CLI classifies the prompt by modality (image / video / music / tts / 3d) and picks a sensible default endpoint. The output includes a `routed` block so you can verify which endpoint actually ran.
+
+```bash
+genmedia run "a cat on the moon" --json
+genmedia run "a 5-second clip of a robot dancing" --json
+genmedia run "narrate this paragraph in a calm voice" --json
+```
+
+Override anytime with an explicit endpoint id (positional that contains `/`):
+
+```bash
+genmedia run fal-ai/flux/pro --prompt "a cat on the moon" --json
+```
+
+### Discover when the user names a fuzzy task or wants a specific endpoint
+
+`genmedia models "<query>"` auto-applies `--category` from the same classifier the smart router uses, so the result list is focused on the right modality. Pass `--no-classify` to disable, or `--category <cat>` to override.
+
+```bash
+genmedia models "background removal product image" --json
+genmedia models --category text-to-video --limit 5 --json
+genmedia models "video models with character consistency" --no-classify --json
+genmedia docs "webhook callbacks" --json
+```
+
+### Run a specific model and download the result
 
 ```bash
 genmedia run fal-ai/flux/dev \
@@ -61,6 +89,15 @@ genmedia status fal-ai/veo3.1 "$REQ" \
  --json
 ```
 
+Smart routing also works for async — the response includes `routed` and `endpoint_id` so you know which endpoint to poll on `status`:
+
+```bash
+SUBMIT=$(genmedia run "a 30-second video of waves" --async --json)
+REQ=$(echo "$SUBMIT" | jq -r '.request_id')
+EP=$(echo "$SUBMIT" | jq -r '.endpoint_id')
+genmedia status "$EP" "$REQ" --download "./out/" --json
+```
+
 ### Upload then run
 
 ```bash
@@ -70,14 +107,6 @@ genmedia run fal-ai/nano-banana-pro/edit \
  --prompt "make the sky stormy" \
  --download "./out/{request_id}_{index}.{ext}" \
  --json
-```
-
-### Discover when the user names a fuzzy task
-
-```bash
-genmedia models "background removal product image" --json
-genmedia models --category text-to-video --limit 5 --json
-genmedia docs "webhook callbacks" --json
 ```
 
 ## Setup (first-time only)

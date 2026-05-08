@@ -59,11 +59,15 @@ genmedia models --status all # include deprecated
 genmedia models --endpoint_id fal-ai/flux/dev,fal-ai/flux/schnell # specific models
 genmedia models --endpoint_id fal-ai/flux/dev --expand openapi-3.0
 genmedia models "flux" --cursor <token> # pagination
+genmedia models "text to image" --no-classify # skip auto-category inference
 ```
+
+When `--category` is omitted and a query is supplied, the CLI infers the category from the query (same classifier the smart router uses) and applies it server-side. JSON output includes `inferred_category` so you can see what was inferred. Pass `--no-classify` to disable, or set `--category <cat>` to override.
 
 | Option | Description |
 |---|---|
-| `--category` | `text-to-image`, `image-to-video`, `text-to-speech`, etc. |
+| `--category` | `text-to-image`, `image-to-video`, `text-to-speech`, etc. Explicit values always win over inferred. |
+| `--no-classify` | Skip auto-inference of `--category` from the query. |
 | `--status` | `active` (default), `deprecated`, `all` |
 | `--limit` | Max results (default 20) |
 | `--cursor` | Pagination token from a previous response |
@@ -85,6 +89,40 @@ Always run `schema` before `run` for an unfamiliar endpoint. The exact field nam
 
 ## run: execute a model
 
+Two forms — smart routing (no endpoint) and explicit endpoint.
+
+### Smart routing (preferred for default-quality requests)
+
+The positional is interpreted as a prompt when it doesn't contain a `/`. The CLI classifies the prompt by modality (image / video / music / tts / 3d) and routes to a sensible default endpoint resolved from a hosted manifest with baked-in fallback.
+
+```bash
+genmedia run "a cat on the moon" --json
+genmedia run "a 5-second clip of a robot dancing" --async --json
+genmedia run "narrate this paragraph in a calm voice" --json
+genmedia run --prompt "a cat on the moon" --json # equivalent: --prompt without positional
+```
+
+JSON output includes a `routed` block:
+
+```json
+{
+  "status": "completed",
+  "endpoint_id": "fal-ai/flux/schnell",
+  "routed": {
+    "modality": "text-to-image",
+    "source": "manifest",
+    "from_prompt": "a cat on the moon"
+  },
+  "result": { ... }
+}
+```
+
+`source` is one of `manifest` (fetched from `https://genmedia.sh/defaults.json`), `cached` (within the 6-hour TTL), or `baked-in` (fallback when offline or fetch failed). Use the returned `endpoint_id` if you need to poll on `status` for an async submission.
+
+### Explicit endpoint
+
+The positional is treated as an endpoint id when it contains `/`. No routing, no `routed` field in the output.
+
 ```bash
 genmedia run fal-ai/flux/dev --prompt "a cat on the moon"
 genmedia run fal-ai/flux/dev --prompt "a cat" --num_images 2
@@ -100,7 +138,8 @@ Any model input parameter can be passed as `--<param> <value>`. Run `genmedia ru
 
 | Option | Description |
 |---|---|
-| `--<param>` | Any model input parameter |
+| `<positional>` | Endpoint id (contains `/`) → explicit run. Otherwise → smart routing prompt. |
+| `--<param>` | Any model input parameter (e.g. `--prompt`, `--num_images`). For smart routing, `prompt` is filled from the positional automatically. |
 | `--logs` | Stream logs while the model runs (pretty mode only) |
 | `--async` | Submit to queue without waiting, returns a `request_id` |
 | `--download [template]` | Save every media URL in the result. Optional template uses `{index}`, `{name}`, `{ext}`, `{request_id}` placeholders. Omitted → cwd with source file names. Trailing `/` or existing dir → dir + source names. Plain filename + multiple outputs → `_1`, `_2` collision suffixes. Downloaded paths appear under `downloaded_files` in JSON. |
