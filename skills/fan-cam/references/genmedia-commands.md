@@ -11,10 +11,11 @@ genmedia models --endpoint_id fal-ai/kling-video/v3/standard/image-to-video --js
 genmedia models --endpoint_id fal-ai/kling-video/v3/pro/image-to-video --json
 genmedia models --endpoint_id fal-ai/kling-video/v3/4k/image-to-video --json
 genmedia schema openai/gpt-image-2/edit --json
-genmedia schema fal-ai/kling-video/v3/standard/image-to-video --format openapi --json
+genmedia schema fal-ai/kling-video/v3/pro/image-to-video --format openapi --json
 ```
 
-Swap the Kling endpoint in schema and pricing checks if choosing Pro or 4K.
+Swap the Kling endpoint in schema and pricing checks only when explicitly
+choosing Standard for economy or 4K for native 4K video.
 
 ## Upload source image
 
@@ -56,6 +57,8 @@ Agent writes `IMAGE_PROMPT` first. This step creates the Kling-ready broadcast
 frame from the identity photo and event brief.
 
 ```bash
+GPT_IMAGE_QUALITY="${GPT_IMAGE_QUALITY:-high}"
+
 FRAME=$(genmedia run openai/gpt-image-2/edit \
   --image_urls "$IMAGE_URLS" \
   --prompt "$IMAGE_PROMPT" \
@@ -72,9 +75,8 @@ FRAME_FILE=$(echo "$FRAME" | jq -r '.downloaded_files[0] // empty')
 
 Use `FRAME_URL`, not `PHOTO_URL`, as Kling `start_image_url`.
 
-Use `GPT_IMAGE_QUALITY=low` for economy or previews. Use
-`GPT_IMAGE_QUALITY=high` for final quality, stronger identity, or detailed
-overlays.
+Use `GPT_IMAGE_QUALITY=high` by default. Override with
+`GPT_IMAGE_QUALITY=low` only for explicitly requested economy or preview runs.
 
 ## Optional frame compression
 
@@ -151,13 +153,16 @@ approved by the user or source workflow.
 
 ## Generate video
 
-Choose one:
+Default to Kling v3 Pro:
 
 ```bash
-KLING_ENDPOINT="fal-ai/kling-video/v3/standard/image-to-video"
-KLING_ENDPOINT="fal-ai/kling-video/v3/pro/image-to-video"
-KLING_ENDPOINT="fal-ai/kling-video/v3/4k/image-to-video"
+KLING_ENDPOINT="${KLING_ENDPOINT:-fal-ai/kling-video/v3/pro/image-to-video}"
 ```
+
+Override with `fal-ai/kling-video/v3/standard/image-to-video` only for
+explicit economy or preview runs. Override with
+`fal-ai/kling-video/v3/4k/image-to-video` only for explicit native 4K video
+delivery.
 
 Submit async:
 
@@ -198,8 +203,9 @@ Return a compact manifest:
 {
   "goal": "personalized sports broadcast fan cam",
   "image_endpoint": "openai/gpt-image-2/edit",
-  "image_quality": "low",
-  "kling_endpoint": "fal-ai/kling-video/v3/standard/image-to-video",
+  "image_quality": "high",
+  "image_size": { "width": 3840, "height": 2160 },
+  "kling_endpoint": "fal-ai/kling-video/v3/pro/image-to-video",
   "total_duration": "12",
   "request_ids": {
     "image": "...",

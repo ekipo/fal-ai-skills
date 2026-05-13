@@ -73,7 +73,7 @@ Budget: balanced.
 
 Plan:
 
-- GPT Image 2 quality: `low` or `high` if final.
+- GPT Image 2 quality: `high`.
 - Kling endpoint: `fal-ai/kling-video/v3/pro/image-to-video`.
 - Beats: 4 beats, 12 seconds.
 
@@ -165,7 +165,7 @@ Budget: balanced.
 
 Plan:
 
-- GPT Image 2 quality: `low` for draft, `high` for final.
+- GPT Image 2 quality: `high`.
 - Kling endpoint: `fal-ai/kling-video/v3/pro/image-to-video`.
 - Beats: 5 beats, 15 seconds.
 
