@@ -11,6 +11,10 @@ Inputs:
 - Reaction or situation.
 - Budget or quality target.
 
+The user photo is the identity reference. It is not a finished fan-cam frame.
+When the input is an ordinary person photo, the image-generation step must use
+`openai/gpt-image-2/edit` to create the broadcast scene before any Kling run.
+
 Outputs to produce before running models:
 
 ```json
@@ -30,7 +34,9 @@ Rules:
 - `beats.length` must be 2 to 5.
 - Every beat duration must be at least 3 seconds.
 - Total duration must be 15 seconds or less.
-- Every beat prompt must reference `@Element1`.
+- If using a real user-provided or approved Kling `elements` entry, every beat
+  prompt must reference `@Element1`. Do not invent extra elements just to
+  satisfy this pattern.
 - Do not expose internal planning text to the user unless they ask for prompts.
 
 ## Image prompt build order
@@ -43,6 +49,10 @@ Rules:
 6. Channel bug.
 7. Realism texture.
 8. Negative constraints.
+
+Do not treat the identity photo as a `start_image_url` for Kling. The image
+prompt must turn that photo into a realistic 16:9 spectator broadcast frame.
+The approved generated frame becomes the Kling `start_image_url`.
 
 Template:
 
@@ -153,9 +163,45 @@ wardrobe, crowd, seat layout, overlay, top-right channel bug, lighting]. Animate
 no beautification, no unstable text, no wrong sport.
 ```
 
-Keep prompts concise. Do not list every constraint in every beat. Put the
-highest-risk continuity constraints in each beat: identity, overlay, channel
-bug, crowd layout, and reaction.
+Use `@Element1` only when a real approved `elements` entry is in the payload.
+Otherwise say "the featured spectator in the start image" or equivalent. Keep
+prompts concise. Do not list every constraint in every beat. Put the highest-
+risk continuity constraints in each beat: identity, overlay, channel bug,
+crowd layout, and reaction.
+
+## Audio and voiceover contract
+
+- Kling requests in this skill must use `generate_audio=true`.
+- Do not combine `multi_prompt` with `end_image_url`.
+- Do not invent extra Kling elements. Use `elements` only for real
+  user-provided or approved references.
+- Do not write external narration as dialogue from the featured spectator.
+- If using Kling native audio for a line, phrase it as an off-screen broadcast
+  commentator, arena PA voice, or non-diegetic voiceover and add: the featured
+  spectator stays silent, lips do not move, no lip sync.
+
+Good native-audio pattern:
+
+```json
+{
+  "duration": "6",
+  "generate_audio": true,
+  "shot_type": "customize",
+  "cfg_scale": 0.32,
+  "start_image_url": "<approved 16:9 spectator frame>",
+  "multi_prompt": [
+    {
+      "duration": "3",
+      "prompt": "Use the start image as the same live NBA timeout crowd shot. The featured spectator is silent and watches the missed t-shirt cannon moment with a small amused reaction. No visible person speaks."
+    },
+    {
+      "duration": "3",
+      "prompt": "Keep the camera on the same spectator and crowd. An off-camera arena PA or crowd-mic voice from the venue says, \"that was close!\" It is not the spectator speaking; no lip sync, no mouth movement matching the words."
+    }
+  ],
+  "negative_prompt": "featured spectator speaking, lip sync, lips moving to narration, mouth forming words, on-camera subject says the line, dialogue from visible fan, visible fan voice, face morphing, unstable scoreboard, wrong sport, camera leaving crowd, end image url"
+}
+```
 
 ## Overlay guidance
 

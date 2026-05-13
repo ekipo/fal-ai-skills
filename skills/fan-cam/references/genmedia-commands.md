@@ -30,6 +30,11 @@ If the user gives a remote URL, use it directly:
 PHOTO_URL="https://example.com/person.jpg"
 ```
 
+This URL is the identity reference, not the Kling `start_image_url`. For a
+personalized fan-cam, always create the broadcast frame with
+`openai/gpt-image-2/edit` before running Kling, unless the user explicitly
+provides an already approved 16:9 fan-cam frame.
+
 Build the GPT Image 2 image URL array:
 
 ```bash
@@ -47,7 +52,8 @@ IMAGE_URLS=$(jq -nc \
 
 ## Generate broadcast frame
 
-Agent writes `IMAGE_PROMPT` first.
+Agent writes `IMAGE_PROMPT` first. This step creates the Kling-ready broadcast
+frame from the identity photo and event brief.
 
 ```bash
 FRAME=$(genmedia run openai/gpt-image-2/edit \
@@ -63,6 +69,8 @@ FRAME=$(genmedia run openai/gpt-image-2/edit \
 FRAME_URL=$(echo "$FRAME" | jq -r '.result.images[0].url')
 FRAME_FILE=$(echo "$FRAME" | jq -r '.downloaded_files[0] // empty')
 ```
+
+Use `FRAME_URL`, not `PHOTO_URL`, as Kling `start_image_url`.
 
 Use `GPT_IMAGE_QUALITY=low` for economy or previews. Use
 `GPT_IMAGE_QUALITY=high` for final quality, stronger identity, or detailed
@@ -127,14 +135,19 @@ MULTI_PROMPT=$(jq -nc \
 TOTAL_DURATION="12"
 ```
 
-Every prompt must mention `@Element1`.
+If you pass a real approved `elements` entry, every prompt must mention
+`@Element1`. If not, do not invent an element; describe the featured spectator
+from the `start_image_url`.
 
-## Build Kling element
+## Optional Kling element
 
 ```bash
 ELEMENTS=$(jq -nc --arg url "$FRAME_URL" \
   '[{reference_image_urls:[$url],frontal_image_url:$url}]')
 ```
+
+Use `--elements "$ELEMENTS"` only when that reference role is intentional and
+approved by the user or source workflow.
 
 ## Generate video
 
@@ -153,7 +166,6 @@ SUBMIT=$(genmedia run "$KLING_ENDPOINT" \
   --start_image_url "$FRAME_URL" \
   --duration "$TOTAL_DURATION" \
   --multi_prompt "$MULTI_PROMPT" \
-  --elements "$ELEMENTS" \
   --shot_type customize \
   --cfg_scale 0.3 \
   --generate_audio true \
@@ -163,6 +175,9 @@ SUBMIT=$(genmedia run "$KLING_ENDPOINT" \
 
 REQ=$(echo "$SUBMIT" | jq -r '.request_id')
 ```
+
+Add `--elements "$ELEMENTS"` only for real approved elements. Do not pass
+`--end_image_url` together with `--multi_prompt`.
 
 Poll and download:
 
