@@ -407,6 +407,32 @@
       ]
     },
     {
+      "name": "fan-cam",
+      "description": "Create personalized live sports broadcast fan-cam videos with genmedia. Use this for realistic spectator cutaways, stadium or arena crowd reactions, broadcast screenshots, sports TV shots, scoreboard overlays, TV channel bugs, and identity-preserving fan reaction videos from a user photo.",
+      "files": [
+        {
+          "path": "SKILL.md",
+          "sha256": "e69db6e643156ce65c3e132f1c79ee75a3630d7f2fd611ed41489beb50a2a208",
+          "bytes": 10359
+        },
+        {
+          "path": "references/examples.md",
+          "sha256": "bc76277e822f3193e1f55ebd8ccb172b7fcacd25260b6204dc0bad95cfcdfa30",
+          "bytes": 6363
+        },
+        {
+          "path": "references/genmedia-commands.md",
+          "sha256": "db0026b1c58240b93f7e81f6f2000256ebaac8458fd229d8af610f92b9809c50",
+          "bytes": 4650
+        },
+        {
+          "path": "references/prompt-contract.md",
+          "sha256": "c1607635a28fc9efd1323fc3acb8b5f350cc57033ed008d791c148db8b4d73c1",
+          "bytes": 6423
+        }
+      ]
+    },
+    {
       "name": "genmedia",
       "description": "Use the genmedia CLI to search, inspect, run, and manage 1200+ fal.ai model endpoints. Trigger when the user mentions \"genmedia\", \"fal CLI\", or asks to \"search models\", \"run a model\", \"fetch schema\", \"check pricing\", \"upload to fal\", \"queue async job\", \"track request\", or any direct interaction with the fal.ai endpoint catalog. This is the foundational skill. Every other fal.ai-related skill in this repo executes its work through genmedia commands. Use `--json` whenever the output will be parsed by an agent.",
       "files": [

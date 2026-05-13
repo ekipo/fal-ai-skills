@@ -1,0 +1,190 @@
+# Fan cam prompt contract
+
+Use this reference to write the generated frame prompt and Kling multi prompts.
+
+## Planning contract
+
+Inputs:
+
+- User photo URL or uploaded URL.
+- Event details.
+- Reaction or situation.
+- Budget or quality target.
+
+Outputs to produce before running models:
+
+```json
+{
+  "image_prompt": "...",
+  "image_quality": "low or high",
+  "kling_endpoint": "fal-ai/kling-video/v3/standard/image-to-video",
+  "beats": [
+    { "duration": "3", "prompt": "..." }
+  ],
+  "total_duration": "..."
+}
+```
+
+Rules:
+
+- `beats.length` must be 2 to 5.
+- Every beat duration must be at least 3 seconds.
+- Total duration must be 15 seconds or less.
+- Every beat prompt must reference `@Element1`.
+- Do not expose internal planning text to the user unless they ask for prompts.
+
+## Image prompt build order
+
+1. Identity reference.
+2. Event context.
+3. Spectator situation or reaction.
+4. Broadcast composition.
+5. Sport-specific overlay.
+6. Channel bug.
+7. Realism texture.
+8. Negative constraints.
+
+Template:
+
+```text
+Use the uploaded photo as the identity reference for the featured spectator.
+Preserve the real face, age impression, skin tone, hair, facial hair, glasses,
+face structure, asymmetry, pores, wrinkles, blemishes, and ordinary
+imperfections. Create a horizontal 16:9 realistic live TV broadcast screenshot
+from [event]. The person is [seated/standing] naturally among [sport-specific
+crowd], [reaction or situation with concrete face, posture, hands, and eye
+direction]. Use [sport-specific venue and broadcast camera language]. Add a
+compact [score/timing] overlay if appropriate and a small top-right generic
+[sport] channel bug reading "[BUG TEXT]". Use mild broadcast compression noise,
+subtle motion blur, off-center crop, foreground occlusion, imperfect background
+faces, natural venue lighting, focus falloff, and ordinary skin texture. No AI
+beauty retouching, no face anatomy changes, no portrait orientation, no studio
+portrait, no passport photo, no influencer look, no fake sponsor marks, no
+oversized logos, no warped text, no anime, no cartoon.
+```
+
+## Reaction mapping
+
+Use the selected reaction as visible physical direction:
+
+- Excited: alert eyes, lifted cheeks, energized shoulders, forward lean.
+- Happy: natural smile, relaxed face, warm eyes, open posture.
+- Laughing: candid mid-laugh, cheeks raised, mouth naturally open, body tilted
+  toward friends or the event.
+- Sad: downcast eyes, deflated shoulders, closed mouth, disappointed stillness.
+- Neutral: calm face, minimal expression, steady gaze.
+- Angry: narrowed eyes, tense jaw, restrained complaint, no aggression.
+- Surprised: raised brows, wider eyes, slight head turn, caught off guard.
+- Nervous: stiff shoulders, tight mouth, fixed stare, small hand tension.
+- Focused: locked eyes, minimal mouth movement, concentrated posture.
+- Eating or drinking: preserve candid broadcast realism. Keep food or drink
+  ordinary and sport-venue plausible, not a comedy prop unless requested.
+
+Blend reaction with event logic. A tennis spectator may be restrained; a
+basketball or football fan may be more animated; a combat sports crowd may be
+tense; a racing grandstand may track fast offscreen motion.
+
+## Scene archetypes
+
+Pick the archetype that best matches user details:
+
+### Classic spectator cutaway
+
+The person watches the event naturally, unaware or barely aware of the camera.
+Use 2 or 3 beats.
+
+### Caught-on-camera moment
+
+The person is eating, drinking, talking to a friend, holding a scarf, checking
+the big screen, or reacting at the exact wrong or funny moment. Keep it candid,
+not slapstick. Use 3 or 4 beats.
+
+### Stadium screen or broadcast feature
+
+The person notices the stadium screen or broadcast camera. Use subtle
+recognition, not a staged pose. Use 4 or 5 beats.
+
+### Tense match moment
+
+The offscreen event intensifies. Crowd motion rises around the person while
+the person stays nervous, focused, surprised, or disappointed. Use 3 to 5 beats.
+
+### Celebration or disappointment
+
+The surrounding crowd erupts or deflates. The person reacts in a natural way
+that matches the chosen reaction and the sport. Use 3 or 4 beats.
+
+## Beat patterns
+
+Choose the smallest useful pattern.
+
+### 6 seconds, 2 beats
+
+1. Establish the broadcast cutaway.
+2. Subtle reaction and crowd rise.
+
+### 9 seconds, 3 beats
+
+1. Establish the exact cutaway.
+2. Reaction-specific motion.
+3. Camera correction or crowd rise.
+
+### 12 seconds, 4 beats
+
+1. Establish the cutaway.
+2. Person reaction or situation detail.
+3. Broadcast camera push, pan, or sidestep.
+4. Event-specific crowd response.
+
+### 15 seconds, 5 beats
+
+1. Establish the cutaway.
+2. Person micro-motion and nearby crowd.
+3. Broadcast reframing or tighter angle.
+4. Offscreen event tension or reveal.
+5. Crowd reaction peak or held final moment.
+
+## Kling beat prompt template
+
+```text
+Use @Element1 as the exact [sport] live broadcast cutaway. Preserve [person,
+wardrobe, crowd, seat layout, overlay, top-right channel bug, lighting]. Animate
+[beat-specific movement]. Keep [reaction] natural and candid. No face morphing,
+no beautification, no unstable text, no wrong sport.
+```
+
+Keep prompts concise. Do not list every constraint in every beat. Put the
+highest-risk continuity constraints in each beat: identity, overlay, channel
+bug, crowd layout, and reaction.
+
+## Overlay guidance
+
+Use overlays only when they improve realism:
+
+- Football: score, clock, half or match time.
+- Basketball: team abbreviations, score, quarter, game clock.
+- Tennis: player names, sets, games, point score.
+- Racing: timing tower or position strip.
+- Combat sports: round and clock.
+- Esports: match HUD or lower-third style, not overloaded UI.
+
+Use a small top-right broadcast bug:
+
+- Generic, sport-specific, and short.
+- Prefer 1 to 2 words plus LIVE when useful.
+- Keep it secondary to the spectator.
+- If the user supplies an exact approved network logo or asks for a named
+  network, preserve it as a small broadcast bug. Otherwise use a generic bug.
+
+## Realism checklist
+
+The frame should have:
+
+- Professional TV lens, not phone selfie.
+- Slightly compressed broadcast feed texture.
+- Natural venue light, not glamor lighting.
+- Foreground occlusion from heads, shoulders, railings, cups, or scarves.
+- Imperfect but believable background faces.
+- Ordinary posture.
+- Sport-specific crowd behavior.
+- Scoreboard and channel bug small enough to feel like TV, not a poster.
