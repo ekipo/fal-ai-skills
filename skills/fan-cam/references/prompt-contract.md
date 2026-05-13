@@ -9,7 +9,7 @@ Inputs:
 - User photo URL or uploaded URL.
 - Event details.
 - Reaction or situation.
-- Budget or quality target.
+- Budget or quality target, only when the user explicitly gives one.
 
 The user photo is the identity reference. It is not a finished fan-cam frame.
 When the input is an ordinary person photo, the image-generation step must use
@@ -20,8 +20,9 @@ Outputs to produce before running models:
 ```json
 {
   "image_prompt": "...",
-  "image_quality": "low or high",
-  "kling_endpoint": "fal-ai/kling-video/v3/standard/image-to-video",
+  "image_quality": "high",
+  "image_size": { "width": 3840, "height": 2160 },
+  "kling_endpoint": "fal-ai/kling-video/v3/pro/image-to-video",
   "beats": [
     { "duration": "3", "prompt": "..." }
   ],
@@ -34,6 +35,11 @@ Rules:
 - `beats.length` must be 2 to 5.
 - Every beat duration must be at least 3 seconds.
 - Total duration must be 15 seconds or less.
+- Default GPT Image 2 edit quality is `high` with a 3840x2160 16:9 frame.
+  Use `low` only for explicitly requested economy or preview runs.
+- Default Kling endpoint is `fal-ai/kling-video/v3/pro/image-to-video`. Use
+  Standard only for explicitly requested economy or preview runs. Use native
+  4K only when explicitly requested for final video delivery.
 - If using a real user-provided or approved Kling `elements` entry, every beat
   prompt must reference `@Element1`. Do not invent extra elements just to
   satisfy this pattern.

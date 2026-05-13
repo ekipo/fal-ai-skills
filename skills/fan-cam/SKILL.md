@@ -40,8 +40,10 @@ Ask only for missing information that changes execution:
   surprised, nervous, focused, eating, distracted, caught on camera, noticing
   the stadium screen, celebrating, disappointed, or another user-specified
   moment.
-- Budget or quality preference when not obvious: economy, balanced, premium,
-  or 4K final.
+- Budget or quality preference only when the user explicitly asks for economy,
+  preview, or native 4K final output. Otherwise use the standard fan-cam
+  defaults: GPT Image 2 edit at `quality=high` with a 3840x2160 frame, then
+  Kling v3 Pro.
 
 If the user gives a local image path, upload it once with `genmedia upload` and
 reuse the returned URL. If the user gives multiple references, treat the first
@@ -85,7 +87,7 @@ Inspect schemas before running:
 
 ```bash
 genmedia schema openai/gpt-image-2/edit --json
-genmedia schema fal-ai/kling-video/v3/standard/image-to-video --format openapi --json
+genmedia schema fal-ai/kling-video/v3/pro/image-to-video --format openapi --json
 ```
 
 Use `--format openapi` for Kling v3 image-to-video endpoints because compact
@@ -104,11 +106,11 @@ genmedia pricing fal-ai/kling-video/v3/4k/image-to-video --json
 
 ### GPT Image 2 quality choice
 
-- Use `quality=low` for economy runs, previews, fast iteration, and lower-cost
-  social drafts.
-- Use `quality=high` for final outputs, stronger identity preservation,
-  detailed broadcast overlays, public examples, or when the user says quality
-  matters more than cost.
+- Use `quality=high` by default for personalized fan-cam frames. GPT Image 2
+  price is strongly affected by `low` vs `high`, but fan-cam identity,
+  broadcast integration, and readable overlays need the stronger default.
+- Use `quality=low` only when the user explicitly requests economy, preview,
+  fast iteration, or lower-cost social drafts.
 - Use `output_format=jpeg` for the generated broadcast frame unless the user
   needs transparency or lossless output.
 - Use 16:9 4K frame size by default:
@@ -121,11 +123,11 @@ genmedia pricing fal-ai/kling-video/v3/4k/image-to-video --json
 
 Select the endpoint based on the brief:
 
-- `fal-ai/kling-video/v3/standard/image-to-video`: default economy or balanced
-  output, fastest iteration, general fan-cam shots.
-- `fal-ai/kling-video/v3/pro/image-to-video`: use when the user wants stronger
-  motion, more controlled broadcast camera behavior, richer crowd action, or
-  higher quality and cost is not the main constraint.
+- `fal-ai/kling-video/v3/pro/image-to-video`: default fan-cam endpoint. Use it
+  for normal personalized sports cutaways, public examples, and any request
+  where the user did not explicitly ask for economy.
+- `fal-ai/kling-video/v3/standard/image-to-video`: use only when the user
+  explicitly asks for economy, preview, fastest iteration, or lower cost.
 - `fal-ai/kling-video/v3/4k/image-to-video`: use only for final premium 4K
   delivery or when the user explicitly asks for 4K video. Check pricing first.
 
@@ -262,11 +264,13 @@ low quality, smeared face, distorted faces, duplicated face, deformed hands, bro
 Before returning:
 
 - The selected endpoint and schema were verified with genmedia.
-- The GPT Image 2 quality choice matches budget and quality needs.
+- GPT Image 2 edit used `quality=high` and `image_size={"width":3840,"height":2160}`
+  unless the user explicitly requested an economy or preview run.
 - If the input was a person photo, a GPT Image 2 edit frame was generated and
   approved before Kling. The raw person photo was not sent directly to Kling as
   the fan-cam start frame.
-- The Kling endpoint choice matches budget and delivery quality.
+- Kling used `fal-ai/kling-video/v3/pro/image-to-video` unless the user
+  explicitly requested economy/preview or native 4K video.
 - Multi prompt durations are each at least 3 seconds.
 - Total duration is 15 seconds or less.
 - Top-level Kling duration equals the sum of beat durations.
