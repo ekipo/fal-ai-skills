@@ -48,6 +48,12 @@ reuse the returned URL. If the user gives multiple references, treat the first
 person image as the identity source and later images as optional venue,
 broadcast, or styling references.
 
+The user photo is an identity reference, not a Kling-ready start frame. Do not
+skip GPT Image 2 edit just because the user supplied a person's photo. For a
+personalized fan-cam, first use `openai/gpt-image-2/edit` to place the person
+inside a realistic 16:9 broadcast scene, then use the approved generated frame
+as Kling `start_image_url`.
+
 ## Pipeline
 
 Default graph:
@@ -55,6 +61,10 @@ Default graph:
 ```text
 photo URL -> prompt planning -> GPT Image 2 edit frame -> optional compression -> Kling v3 image-to-video -> downloaded video manifest
 ```
+
+The GPT Image 2 edit frame is mandatory when the input is an ordinary person
+photo. Only bypass this step if the user explicitly provides an already
+approved 16:9 broadcast fan-cam frame and asks to animate that frame.
 
 The planning step is performed by the agent using this skill. Do not call a
 separate LLM endpoint just to write prompts unless the user explicitly asks for
@@ -132,7 +142,9 @@ Hard rules:
 - Total video duration must be 15 seconds or less.
 - Use 2 to 5 multi prompts.
 - Set the top-level Kling `duration` equal to the sum of all beat durations.
-- Every multi prompt must reference `@Element1`.
+- If a real user-provided or approved reference is supplied through Kling
+  `elements`, every multi prompt must reference `@Element1`. Do not invent
+  extra elements just to satisfy a prompt pattern.
 - Keep every Kling prompt concise. Aim for 250-430 characters.
 
 Recommended patterns:
@@ -213,7 +225,13 @@ The image prompt must avoid:
 
 The Kling prompts must:
 
-- Reference `@Element1` in every beat.
+- Reference `@Element1` in every beat only when the request actually includes a
+  real user-provided or approved Kling `elements` entry. Otherwise describe the
+  featured spectator from the `start_image_url`; do not invent extra elements.
+- Always submit Kling with `generate_audio=true`. Do not use
+  `generate_audio=false` in this skill.
+- When using `multi_prompt`, do not send `end_image_url`; Kling rejects
+  `end_image_url` together with `multi_prompt`.
 - Preserve the same person, face, outfit, seat area, crowd, overlay, lighting,
   and channel bug.
 - Animate realistic broadcast motion: small head movement, blinking, breath,
@@ -222,6 +240,11 @@ The Kling prompts must:
 - Use sport-specific language. Never write generic alternatives like "field or
   court" or "stadium or arena".
 - Fit the chosen beat duration.
+- If a spoken phrase should be external narration, do not write it as something
+  the featured spectator says. Phrase it as an off-screen broadcast commentator,
+  arena PA voice, or non-diegetic voiceover, and explicitly state that the
+  featured spectator stays silent with no lip sync and no mouth movement
+  matching the voice.
 - Avoid face morphing, beautification, unstable scoreboard text, unstable logo,
   wrong sport, impossible crowd action, excessive camera movement, and sudden
   scene resets.
@@ -240,11 +263,19 @@ Before returning:
 
 - The selected endpoint and schema were verified with genmedia.
 - The GPT Image 2 quality choice matches budget and quality needs.
+- If the input was a person photo, a GPT Image 2 edit frame was generated and
+  approved before Kling. The raw person photo was not sent directly to Kling as
+  the fan-cam start frame.
 - The Kling endpoint choice matches budget and delivery quality.
 - Multi prompt durations are each at least 3 seconds.
 - Total duration is 15 seconds or less.
 - Top-level Kling duration equals the sum of beat durations.
-- Every beat references `@Element1`.
+- Every beat references `@Element1` when a real Kling `elements` entry is used.
+- No invented extra elements were added.
+- Kling request uses `generate_audio=true`.
+- Kling request does not combine `multi_prompt` with `end_image_url`.
+- Any intended external narration is not lip-synced to the featured spectator;
+  verify the mouth does not move like the voice belongs to the person on camera.
 - The generated frame is below Kling image limits. If not, compress it.
 - The person remains recognizable and not beautified.
 - The broadcast bug and scoreboard are small and stable enough.
